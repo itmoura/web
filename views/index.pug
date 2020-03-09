@@ -39,7 +39,7 @@ block content
                                 button.btn.btn-secondary(type='button', data-dismiss='modal') Fechar
                                 button.btn.btn-primary#sendTeacher(type='button') Confirmar
 
-        #v-pills-student.tab-pane.fade(role='tabpanel', aria-labelledby='v-pills-student-tab')
+        #v-pills-student.tab-pane.fade.col-10(style='margin: 0 auto;', role='tabpanel', aria-labelledby='v-pills-student-tab')
             button.btn.btn-success.float-right.cadT(type='button', data-toggle='modal', data-target='#modalStudent') Cadastrar Aluno
             table.table.table-borderless.table-hover
                 thead
@@ -47,6 +47,7 @@ block content
                         th(scope='col') #
                         th(scope='col') Nome
                         th(scope='col') Matricula
+                        th(scope='col') Turma
                         th(scope='col') Ação
                 tbody#student
                 // Modal
@@ -67,11 +68,13 @@ block content
                                     .form-group
                                         label(for='registrationStudent') Matricula
                                         input#registrationStudent.form-control(type='number', placeholder='Matricula')
+                                    .form-group
+                                        label(for='classStudent') Turma
+                                        select#classStudent.form-control
                             .modal-footer
                                 button.btn.btn-secondary(type='button', data-dismiss='modal') Fechar
                                 button.btn.btn-primary#sendStudent(type='button') Confirmar
-        #v-pills-class.tab-pane.fade(role='tabpanel', aria-labelledby='v-pills-class-tab')
-            h2 Não FUNCIONAL
+        #v-pills-class.tab-pane.fade.col-12(style='margin: 0 auto;', role='tabpanel', aria-labelledby='v-pills-class-tab')
             button.btn.btn-success.float-right.cadT(type='button', data-toggle='modal', data-target='#modalClass') Cadastrar Turma
             table.table.table-borderless.table-hover
                 thead
@@ -79,15 +82,18 @@ block content
                         th(scope='col') #
                         th(scope='col') Code
                         th(scope='col') Sala
+                        th(scope='col') Professor
                         th(scope='col') Data Abertura
                         th(scope='col') Data Encerramento
+                        th(scope='col') Em andamento
+                        th(scope='col') Ação
                 tbody#class
                 // Modal
                 #modalClass.modal.fade(tabindex='-1', role='dialog', aria-labelledby='myLargeModalLabel', aria-hidden='true')
                     .modal-dialog.modal-lg(role='document')
                         .modal-content
                             .modal-header
-                                h5#turmaLabel.modal-title Cadastrar Turma
+                                h5#classLabel.modal-title Cadastrar Turma
                                 button.close(type='button', data-dismiss='modal', aria-label='Fechar')
                                 span(aria-hidden='true') ×
                             .modal-body
@@ -95,8 +101,8 @@ block content
                                     input#idDel.form-control(type='hidden')
                                     input#idClass.form-control(type='hidden')
                                     .form-group
-                                        label(for='teacherID') Professor ID
-                                        input#teacherID.form-control(type='number', placeholder='Professor ID')
+                                        label(for='teacherID') Professor
+                                        select#teacherID.form-control
                                     .form-group
                                         label(for='codeClass') Code
                                         input#codeClass.form-control(type='text', placeholder='Code')
@@ -115,6 +121,22 @@ block content
 
     script.
         $(document).ready(function(){
+            $.get("http://localhost:7888/teacher", function(data, status){
+                for(var i = 0; i < data.length; i++){
+                    $("#teacherID").append(
+                        $("<option>", {value: data[i]['id'], text: data[i]['name']} )
+                    );
+                }
+            });
+
+            $.get("http://localhost:7888/class", function(data, status){
+                for(var i = 0; i < data.length; i++){
+                    $("#classStudent").append(
+                        $("<option>", {value: data[i]['id'], text: data[i]['code']} )
+                    );
+                }
+            });
+
             $.get("http://localhost:7888/teacher", function(data, status){
                 for(var i = 0; i < data.length; i++){
                     $("#teacher").append(
@@ -211,9 +233,10 @@ block content
                             "<td>"+data[i]['id']+"</td>"+
                             "<td>"+data[i]['name']+"</td>"+
                             "<td>"+data[i]['registration']+"</td>"+
+                            "<td>"+data[i]['classId'].code+"</td>"+
                             "<td class='actions'>"+
-                            "<a style='margin-right: 5px;' class='editStudent' href='' data-toggle='modal', data-target='#modalStudent', data-id='"+data[i]['id']+"' data-registration='"+data[i]['registration']+"' data-name='"+data[i]['name']+"' data-class='"+data[i]['classId']+"'>Editar /"+
-                            "<a style='margin-right: 5px;' class='delStudent' href='' data-toggle='modal', data-target='#modalStudent', data-id='"+data[i]['id']+"' data-registration='"+data[i]['registration']+"' data-name='"+data[i]['name']+"' data-class='"+data[i]['classId']+"' data-del='1'>Excluir"+
+                            "<a style='margin-right: 5px;' class='editStudent' href='' data-toggle='modal', data-target='#modalStudent', data-id='"+data[i]['id']+"' data-registration='"+data[i]['registration']+"' data-name='"+data[i]['name']+"' data-class='"+data[i]['classId'].id+"'>Editar /"+
+                            "<a style='margin-right: 5px;' class='delStudent' href='' data-toggle='modal', data-target='#modalStudent', data-id='"+data[i]['id']+"' data-registration='"+data[i]['registration']+"' data-name='"+data[i]['name']+"' data-class='"+data[i]['classId'].id+"' data-del='1'>Excluir"+
                             "</a>"+
                             "</td>"+
                         "</tr>")
@@ -224,6 +247,9 @@ block content
                     $("#idStudent").val($(this).attr("data-id"));
                     $("#nameStudent").val($(this).attr("data-name"));
                     $("#registrationStudent").val($(this).attr("data-registration"));
+
+                    $("#classStudent").val($(this).attr("data-class")).trigger("change");
+
                     $("#nameStudent").removeAttr('disabled');
                     $("#registrationStudent").removeAttr('disabled');
                 });
@@ -242,7 +268,8 @@ block content
                 var idDel = $("#idDel").val();
                 var id = $("#idStudent").val();
                 var name = $("#nameStudent").val();
-                var registration = $("#registrationStudent").val();
+                var registration = parseInt($("#registrationStudent").val());
+                var classId = parseInt($("#classStudent").val());
                 if(!idDel){
                     if(id){
                         $.ajax({
@@ -253,7 +280,8 @@ block content
                             },
                             data: JSON.stringify({
                                 name: name,
-                                registration: registration
+                                registration: registration,
+                                classId: classId
                             }),
                             success: function(data) {
                                 window.location.replace("http://localhost:3000");
@@ -268,7 +296,9 @@ block content
                             },
                             data: JSON.stringify({
                                 name: name,
-                                registration: registration
+                                registration: registration,
+                                classId: classId
+
                             }),
                             success: function(data) {
                                 window.location.replace("http://localhost:3000");
@@ -290,23 +320,31 @@ block content
             // CLASS
 
             $.get("http://localhost:7888/class", function(data, status){
+                var dataA = (new Date).getTime();
                 for(var i = 0; i < data.length; i++){
+                    var dataO = Date.parse(data[i]['dateOppening']);
+                    var dataE = Date.parse(data[i]['dateEnding']);
+                    var resp = "Não";
+                    if(dataA >= dataO && dataA < dataE)
+                        resp = "Sim"
                     $("#class").append(
                         $("<tr>"+
                             "<td>"+data[i]['id']+"</td>"+
                             "<td>"+data[i]['code']+"</td>"+
                             "<td>"+data[i]['room']+"</td>"+
+                            "<td>"+data[i]['teacherId'].name+"</td>"+
                             "<td class='date'>"+data[i]['dateOppening']+"</td>"+
                             "<td class='date'>"+data[i]['dateEnding']+"</td>"+
+                            "<td>"+resp+"</td>"+
                             "<td class='actions'>"+
-                            "<a style='margin-right: 5px;' class='editClass' href='' data-toggle='modal', data-target='#modalClass', data-id='"+data[i]['id']+"' data-code='"+data[i]['code']+"' data-room='"+data[i]['room']+"' data-dateOppening='"+data[i]['dateOppening']+"' data-dateEnding='"+data[i]['dateEnding']+"'>Editar /"+
-                            "<a style='margin-right: 5px;' class='delClass' href='' data-toggle='modal', data-target='#modalClass', data-id='"+data[i]['id']+"' data-code='"+data[i]['code']+"' data-room='"+data[i]['room']+"' data-dateOppening='"+data[i]['dateOppening']+"' data-dateEnding='"+data[i]['dateEnding']+"' data-del='1'>Excluir"+
+                            "<a style='margin-right: 5px;' class='editClass' href='' data-toggle='modal', data-target='#modalClass', data-teacher='"+data[i]['teacherId'].id+"' data-id='"+data[i]['id']+"' data-code='"+data[i]['code']+"' data-room='"+data[i]['room']+"' data-dateOppening='"+data[i]['dateOppening']+"' data-dateEnding='"+data[i]['dateEnding']+"'>Editar /"+
+                            "<a style='margin-right: 5px;' class='delClass' href='' data-toggle='modal', data-target='#modalClass', data-teacher='"+data[i]['teacherId'].id+"' data-id='"+data[i]['id']+"' data-code='"+data[i]['code']+"' data-room='"+data[i]['room']+"' data-dateOppening='"+data[i]['dateOppening']+"' data-dateEnding='"+data[i]['dateEnding']+"' data-del='1'>Excluir"+
                             "</a>"+
                             "</td>"+
                         "</tr>")
                     );
                 }
-                $('.date').mask('00/00/0000');
+                $('.date').mask('0000-00-00');
                 $(".editClass").click(function(){
                     $("#classLabel").text("Editar Turma");
                     $("#idClass").val($(this).attr("data-id"));
@@ -314,6 +352,9 @@ block content
                     $("#roomClass").val($(this).attr("data-room"));
                     $("#dateOppeningClass").val($(this).attr("data-dateOppening"));
                     $("#dateEndingClass").val($(this).attr("data-dateEnding"));
+                    $("#teacherID").val($(this).attr("data-teacher"));
+
+                    $("#teacherID").val($(this).attr("data-teacher")).trigger("change");
 
                     $("#codeClass").removeAttr('disabled');
                     $("#roomClass").removeAttr('disabled');
@@ -340,7 +381,7 @@ block content
             $("#sendClass").click(function(){
                 var idDel = $("#idDel").val();
                 var id = $("#idClass").val();
-                var teacherId = $("#teacherID").val();
+                var teacherId = parseInt($("#teacherID").val());
                 var code = $("#codeClass").val();
                 var room = $("#roomClass").val();
                 var dateOppening = $("#dateOppeningClass").val();
@@ -358,7 +399,7 @@ block content
                                 room: room,
                                 dateOppening: dateOppening,
                                 dateEnding: dateEnding,
-                                teacher_id: teacherId
+                                teacherId: teacherId
                             }),
                             success: function(data) {
                                 window.location.replace("http://localhost:3000");
