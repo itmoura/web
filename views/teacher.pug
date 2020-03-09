@@ -1,0 +1,9 @@
+extends layout
+
+block content
+    #v-pills-tab.nav.position-fixed.flex-column.nav-pills.col-3.float-left.bg-menu(role='tablist', aria-orientation='vertical')
+        img.logo(src='../assets/b2ml-logo.png')
+        a#v-pills-teacher-tab.nav-link.active(href='http://localhost:3000#v-pills-teacher' ) Professores
+        a#v-pills-student-tab.nav-link(href='http://localhost:3000#v-pills-student' ) Alunos
+        a#v-pills-class-tab.nav-link(href='http://localhost:3000#v-pills-class' ) Turma
+    p #{id}
