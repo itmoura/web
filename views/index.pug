@@ -8,7 +8,7 @@ block content
         a#v-pills-class-tab.nav-link(data-toggle='pill', href='#v-pills-class', role='tab', aria-controls='v-pills-class', aria-selected='false') Turma
     #v-pills-tabContent.tab-content.col-9.float-right
         #v-pills-teacher.tab-pane.fade.show.active.col-10(style='margin: 0 auto;', role='tabpanel', aria-labelledby='v-pills-teacher-tab')
-            button.btn.btn-success.float-right.cadT(type='button', data-toggle='modal', data-target='#modalTeacher') Cadastrar Professor
+            button.btn.btn-success.float-right.cadT#modalTeacherO(type='button', data-toggle='modal', data-target='#modalTeacher') Cadastrar Professor
             table.table.table-borderless.table-hover
                 thead
                     tr
@@ -40,7 +40,7 @@ block content
                                 button.btn.btn-primary#sendTeacher(type='button') Confirmar
 
         #v-pills-student.tab-pane.fade.col-10(style='margin: 0 auto;', role='tabpanel', aria-labelledby='v-pills-student-tab')
-            button.btn.btn-success.float-right.cadT(type='button', data-toggle='modal', data-target='#modalStudent') Cadastrar Aluno
+            button.btn.btn-success.float-right.cadT#modalStudentO(type='button', data-toggle='modal', data-target='#modalStudent') Cadastrar Aluno
             table.table.table-borderless.table-hover
                 thead
                     tr
@@ -60,7 +60,6 @@ block content
                                 span(aria-hidden='true') ×
                             .modal-body
                                 form
-                                    input#idDel.form-control(type='hidden')
                                     input#idStudent.form-control(type='hidden')
                                     .form-group
                                         label(for='nameStudent') Nome
@@ -75,7 +74,7 @@ block content
                                 button.btn.btn-secondary(type='button', data-dismiss='modal') Fechar
                                 button.btn.btn-primary#sendStudent(type='button') Confirmar
         #v-pills-class.tab-pane.fade.col-12(style='margin: 0 auto;', role='tabpanel', aria-labelledby='v-pills-class-tab')
-            button.btn.btn-success.float-right.cadT(type='button', data-toggle='modal', data-target='#modalClass') Cadastrar Turma
+            button.btn.btn-success.float-right.cadT#modalClassO(type='button', data-toggle='modal', data-target='#modalClass') Cadastrar Turma
             table.table.table-borderless.table-hover
                 thead
                     tr
@@ -98,7 +97,6 @@ block content
                                 span(aria-hidden='true') ×
                             .modal-body
                                 form
-                                    input#idDel.form-control(type='hidden')
                                     input#idClass.form-control(type='hidden')
                                     .form-group
                                         label(for='teacherID') Professor
@@ -136,302 +134,7 @@ block content
                     );
                 }
             });
-
-            $.get("http://localhost:7888/teacher", function(data, status){
-                for(var i = 0; i < data.length; i++){
-                    $("#teacher").append(
-                        $("<tr>"+
-                            "<td>"+data[i]['id']+"</td>"+
-                            "<td>"+data[i]['name']+"</td>"+
-                            "<td>"+data[i]['titration']+"</td>"+
-                            "<td class='actions'>"+
-                            "<a style='margin-right: 5px;' class='editTeacher' href='' data-toggle='modal', data-target='#modalTeacher', data-id='"+data[i]['id']+"' data-titration='"+data[i]['titration']+"' data-name='"+data[i]['name']+"'>Editar /"+
-                            "<a style='margin-right: 5px;' class='delTeacher' href='' data-toggle='modal', data-target='#modalTeacher', data-id='"+data[i]['id']+"' data-titration='"+data[i]['titration']+"' data-name='"+data[i]['name']+"' data-del='1'>Excluir"+
-                            "</a>"+
-                            "</td>"+
-                        "</tr>")
-                    );
-                }
-                $(".editTeacher").click(function(){
-                    $("#exampleModalLabel").text("Editar Professor");
-                    $("#idTeacher").val($(this).attr("data-id"));
-                    $("#nameTeacher").val($(this).attr("data-name"));
-                    $("#titrationTeacher").val($(this).attr("data-titration"));
-                    $("#nameTeacher").removeAttr('disabled');
-                    $("#titrationTeacher").removeAttr('disabled');
-                });
-
-                $(".delTeacher").click(function(){
-                    $("#exampleModalLabel").text("Deletar Professor");
-                    $("#idDel").val($(this).attr("data-del"));
-                    $("#idTeacher").val($(this).attr("data-id"));
-                    $("#nameTeacher").val($(this).attr("data-name"));
-                    $("#titrationTeacher").val($(this).attr("data-titration"));
-                    $("#nameTeacher").attr('disabled','disabled');
-                    $("#titrationTeacher").attr('disabled','disabled');
-                });
-            });
-            $("#sendTeacher").click(function(){
-                var idDel = $("#idDel").val();
-                var id = $("#idTeacher").val();
-                var name = $("#nameTeacher").val();
-                var titration = $("#titrationTeacher").val();
-                if(!name || !titration){
-                    alert('Campos com * é obrigatorio!');
-                    return false;
-                }
-                if(!idDel){
-                    if(id){
-                        $.ajax({
-                            method: "PUT",
-                            url: "http://localhost:7888/teacher/"+id,
-                            headers: {
-                                "Content-Type": "application/json"
-                            },
-                            data: JSON.stringify({
-                                name: name,
-                                titration: titration
-                            }),
-                            success: function(data) {
-                                window.location.replace("http://localhost:3000");
-                            }
-                        });
-                    } else {
-                        $.ajax({
-                            method: "POST",
-                            url: "http://localhost:7888/teacher",
-                            headers: {
-                                "Content-Type": "application/json"
-                            },
-                            data: JSON.stringify({
-                                name: name,
-                                titration: titration
-                            }),
-                            success: function(data) {
-                                window.location.replace("http://localhost:3000");
-                            }
-                        });
-                    }
-                } else {
-                    $.ajax({
-                        method: "DELETE",
-                        url: "http://localhost:7888/teacher/"+id,
-                        success: function(data) {
-                            window.location.replace("http://localhost:3000");
-                        }
-                    });
-                }
-            });
-
-
-            // STUDENT
-
-            $.get("http://localhost:7888/student", function(data, status){
-                for(var i = 0; i < data.length; i++){
-                    $("#student").append(
-                        $("<tr>"+
-                            "<td>"+data[i]['id']+"</td>"+
-                            "<td>"+data[i]['name']+"</td>"+
-                            "<td>"+data[i]['registration']+"</td>"+
-                            "<td>"+data[i]['classId'].code+"</td>"+
-                            "<td class='actions'>"+
-                            "<a style='margin-right: 5px;' class='editStudent' href='' data-toggle='modal', data-target='#modalStudent', data-id='"+data[i]['id']+"' data-registration='"+data[i]['registration']+"' data-name='"+data[i]['name']+"' data-class='"+data[i]['classId'].id+"'>Editar /"+
-                            "<a style='margin-right: 5px;' class='delStudent' href='' data-toggle='modal', data-target='#modalStudent', data-id='"+data[i]['id']+"' data-registration='"+data[i]['registration']+"' data-name='"+data[i]['name']+"' data-class='"+data[i]['classId'].id+"' data-del='1'>Excluir"+
-                            "</a>"+
-                            "</td>"+
-                        "</tr>")
-                    );
-                }
-                $(".editStudent").click(function(){
-                    $("#alunoLabel").text("Editar Aluno");
-                    $("#idStudent").val($(this).attr("data-id"));
-                    $("#nameStudent").val($(this).attr("data-name"));
-                    $("#registrationStudent").val($(this).attr("data-registration"));
-
-                    $("#classStudent").val($(this).attr("data-class")).trigger("change");
-
-                    $("#nameStudent").removeAttr('disabled');
-                    $("#registrationStudent").removeAttr('disabled');
-                });
-
-                $(".delStudent").click(function(){
-                    $("#alunoLabel").text("Deletar Aluno");
-                    $("#idDel").val($(this).attr("data-del"));
-                    $("#idStudent").val($(this).attr("data-id"));
-                    $("#nameStudent").val($(this).attr("data-name"));
-                    $("#registrationStudent").val($(this).attr("data-registration"));
-                    $("#nameStudent").attr('disabled','disabled');
-                    $("#registrationStudent").attr('disabled','disabled');
-                });
-            });
-            $("#sendStudent").click(function(){
-                var idDel = $("#idDel").val();
-                var id = $("#idStudent").val();
-                var name = $("#nameStudent").val();
-                var registration = parseInt($("#registrationStudent").val());
-                var classId = parseInt($("#classStudent").val());
-                if(!idDel){
-                    if(id){
-                        $.ajax({
-                            method: "PUT",
-                            url: "http://localhost:7888/student/"+id,
-                            headers: {
-                                "Content-Type": "application/json"
-                            },
-                            data: JSON.stringify({
-                                name: name,
-                                registration: registration,
-                                classId: classId
-                            }),
-                            success: function(data) {
-                                window.location.replace("http://localhost:3000");
-                            }
-                        });
-                    } else {
-                        $.ajax({
-                            method: "POST",
-                            url: "http://localhost:7888/student",
-                            headers: {
-                                "Content-Type": "application/json"
-                            },
-                            data: JSON.stringify({
-                                name: name,
-                                registration: registration,
-                                classId: classId
-
-                            }),
-                            success: function(data) {
-                                window.location.replace("http://localhost:3000");
-                            }
-                        });
-                    }
-                } else {
-                    $.ajax({
-                        method: "DELETE",
-                        url: "http://localhost:7888/student/"+id,
-                        success: function(data) {
-                            window.location.replace("http://localhost:3000");
-                        }
-                    });
-                }
-            });
-
-
-            // CLASS
-
-            $.get("http://localhost:7888/class", function(data, status){
-                var dataA = (new Date).getTime();
-                for(var i = 0; i < data.length; i++){
-                    var dataO = Date.parse(data[i]['dateOppening']);
-                    var dataE = Date.parse(data[i]['dateEnding']);
-                    var resp = "Não";
-                    if(dataA >= dataO && dataA < dataE)
-                        resp = "Sim"
-                    $("#class").append(
-                        $("<tr>"+
-                            "<td>"+data[i]['id']+"</td>"+
-                            "<td>"+data[i]['code']+"</td>"+
-                            "<td>"+data[i]['room']+"</td>"+
-                            "<td>"+data[i]['teacherId'].name+"</td>"+
-                            "<td class='date'>"+data[i]['dateOppening']+"</td>"+
-                            "<td class='date'>"+data[i]['dateEnding']+"</td>"+
-                            "<td>"+resp+"</td>"+
-                            "<td class='actions'>"+
-                            "<a style='margin-right: 5px;' class='editClass' href='' data-toggle='modal', data-target='#modalClass', data-teacher='"+data[i]['teacherId'].id+"' data-id='"+data[i]['id']+"' data-code='"+data[i]['code']+"' data-room='"+data[i]['room']+"' data-dateOppening='"+data[i]['dateOppening']+"' data-dateEnding='"+data[i]['dateEnding']+"'>Editar /"+
-                            "<a style='margin-right: 5px;' class='delClass' href='' data-toggle='modal', data-target='#modalClass', data-teacher='"+data[i]['teacherId'].id+"' data-id='"+data[i]['id']+"' data-code='"+data[i]['code']+"' data-room='"+data[i]['room']+"' data-dateOppening='"+data[i]['dateOppening']+"' data-dateEnding='"+data[i]['dateEnding']+"' data-del='1'>Excluir"+
-                            "</a>"+
-                            "</td>"+
-                        "</tr>")
-                    );
-                }
-                $('.date').mask('0000-00-00');
-                $(".editClass").click(function(){
-                    $("#classLabel").text("Editar Turma");
-                    $("#idClass").val($(this).attr("data-id"));
-                    $("#codeClass").val($(this).attr("data-code"));
-                    $("#roomClass").val($(this).attr("data-room"));
-                    $("#dateOppeningClass").val($(this).attr("data-dateOppening"));
-                    $("#dateEndingClass").val($(this).attr("data-dateEnding"));
-                    $("#teacherID").val($(this).attr("data-teacher"));
-
-                    $("#teacherID").val($(this).attr("data-teacher")).trigger("change");
-
-                    $("#codeClass").removeAttr('disabled');
-                    $("#roomClass").removeAttr('disabled');
-                    $("#dateOppeningClass").removeAttr('disabled');
-                    $("#dateEndingClass").removeAttr('disabled');
-                });
-
-                $(".delStudent").click(function(){
-                    $("#classLabel").text("Deletar Turma");
-                    $("#idDel").val($(this).attr("data-del"));
-                    $("#idClass").val($(this).attr("data-id"));
-                    $("#codeClass").val($(this).attr("data-code"));
-                    $("#roomClass").val($(this).attr("data-room"));
-                    $("#dateOppeningClass").val($(this).attr("data-dateOppening"));
-                    $("#dateEndingClass").val($(this).attr("data-dateEnding"));
-
-
-                    $("#codeClass").attr('disabled','disabled');
-                    $("#roomClass").attr('disabled','disabled');
-                    $("#dateOppeningClass").attr('disabled','disabled');
-                    $("#dateEndingClass").attr('disabled','disabled');
-                });
-            });
-            $("#sendClass").click(function(){
-                var idDel = $("#idDel").val();
-                var id = $("#idClass").val();
-                var teacherId = parseInt($("#teacherID").val());
-                var code = $("#codeClass").val();
-                var room = $("#roomClass").val();
-                var dateOppening = $("#dateOppeningClass").val();
-                var dateEnding = $("#dateEndingClass").val();
-                if(!idDel){
-                    if(id){
-                        $.ajax({
-                            method: "PUT",
-                            url: "http://localhost:7888/class/"+id,
-                            headers: {
-                                "Content-Type": "application/json"
-                            },
-                            data: JSON.stringify({
-                                code: code,
-                                room: room,
-                                dateOppening: dateOppening,
-                                dateEnding: dateEnding,
-                                teacherId: teacherId
-                            }),
-                            success: function(data) {
-                                window.location.replace("http://localhost:3000");
-                            }
-                        });
-                    } else {
-                        $.ajax({
-                            method: "POST",
-                            url: "http://localhost:7888/class",
-                            headers: {
-                                "Content-Type": "application/json"
-                            },
-                            data: JSON.stringify({
-                                code: code,
-                                room: room,
-                                dateOppening: dateOppening,
-                                dateEnding: dateEnding,
-                                teacherId: teacherId
-                            }),
-                            success: function(data) {
-                                window.location.replace("http://localhost:3000");
-                            }
-                        });
-                    }
-                } else {
-                    $.ajax({
-                        method: "DELETE",
-                        url: "http://localhost:7888/class/"+id,
-                        success: function(data) {
-                            window.location.replace("http://localhost:3000");
-                        }
-                    });
-                }
-            });
         });
+    script(src="./javascripts/teacher.js")
+    script(src="./javascripts/student.js")
+    script(src="./javascripts/class.js")
